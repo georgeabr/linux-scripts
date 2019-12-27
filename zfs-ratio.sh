@@ -10,8 +10,8 @@
 # 1.00 - /bin/znew
 
 for i in $* ; do
-actualsize=`du -s --apparent-size $i 2>/dev/null|awk '{print $1}'`
-compressedsize=`du -s $i 2>/dev/null|awk '{print $1}'`
+actualsize=`du -s --apparent-size $i |awk '{print $1}2>/dev/null'`
+compressedsize=`du -s $i |awk '{print $1}2>/dev/null'`
 var3=$(echo "scale=2;if (($actualsize/$compressedsize) < 1) print 0; if (($actualsize/$compressedsize) < 10) print 0; print ($actualsize/$compressedsize)" | bc)
 printf "$var3 - $i\n"
 done
