@@ -116,7 +116,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	mkdir -p ~/.config/sway
 	cp /usr/local/etc/sway/config ~/.config/sway
 	# sudo sed -i -e 's/urxvt/kitty/g' /usr/local/etc/sway/config
-	sed -i -e 's/urxvt/kitty/g' ~/.config/sway
+	sed -i -e 's/urxvt/kitty/g' ~/.config/sway/config
 fi
 
 
