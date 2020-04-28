@@ -3,12 +3,11 @@
 # shows the compression ratio for each file in the specified folder
 # it adds a leading zero, if value less than 1
 # for example: ./zfs-ratio.sh /opt/ /bin/ /var/ /usr/ /etc/ /boot/ 2>/dev/null
-# 01.51 - /opt/
-# 01.71 - /bin/
-# 01.08 - /var/
-# 01.40 - /usr/
-# 00.46 - /etc/
-# 01.03 - /boot/
+# Ratio - size - name
+# ===================
+# 01.42 - 6.0G - /usr/
+# 01.26 - 1.5G - /var/
+# 01.86 - 2.5G - /lib/
 
 printf "Ratio - size - name\n"
 printf "===================\n"
