@@ -111,7 +111,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 	sudo apt install -y curl xz-utils libcanberra0 libxcb-xkb1
 	sudo mkdir -p /opt/kitty
 	# curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.14.4/kitty-0.14.4-x86_64.txz | sudo tar xvJ -C /opt/kitty
-	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.17.3/kitty-0.17.3-i686.txz | sudo tar xvJ -C /opt/kitty
+	curl -L https://github.com/kovidgoyal/kitty/releases/download/v0.17.3/kitty-0.17.3-x86_64.txz | sudo tar xvJ -C /opt/kitty
 	sudo ln -sf /opt/kitty/bin/kitty /usr/local/bin
 	mkdir -p ~/.config/sway
 	cp /usr/local/etc/sway/config ~/.config/sway
