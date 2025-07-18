@@ -44,7 +44,7 @@ class BatteryMonitorApp:
         frame.grid_columnconfigure(0, weight=0)
         frame.grid_columnconfigure(1, weight=1)
 
-        # Status row (tighter vertical spacing)
+        # Status row
         ttk.Label(frame, text="Status:") \
             .grid(row=0, column=0, sticky='w', pady=1)
         self.status_val = ttk.Label(frame, text="N/A", anchor='w')
@@ -62,9 +62,14 @@ class BatteryMonitorApp:
         self.time_val = ttk.Label(frame, text="N/A", anchor='w')
         self.time_val.grid(row=2, column=1, sticky='w', pady=1)
 
-        # Exit button (lowered down with more top padding)
+        # Exit button
         ttk.Button(frame, text="Exit", command=master.destroy) \
             .grid(row=3, column=0, columnspan=2, pady=(20, 0), sticky='ew')
+
+        # Precompile regexes for time parsing
+        self._rx_hms     = re.compile(r'^(?:(\d+):)?(\d+):(\d+)$')
+        self._rx_hours   = re.compile(r'([\d.]+)\s*hours?')
+        self._rx_minutes = re.compile(r'([\d.]+)\s*minutes?')
 
         # Kick off periodic updates
         self.update_battery_info()
@@ -99,19 +104,45 @@ class BatteryMonitorApp:
             return None
 
     def format_time(self, s):
+        """
+        Normalize a UPower time string into H:MM.
+        Handles "HH:MM:SS", decimal hours, and minutes.
+        """
         if s == 'N/A':
             return 'N/A'
-        t = re.sub(r'\s*\(est\)', '', s)
-        t = (t.replace('hours', '')
-              .replace('hour', '')
-              .replace('minutes', '')
-              .replace('minute', '')
-              .strip())
+        # strip any "(est)"
+        t = re.sub(r'\s*\(est\)', '', s).strip()
+
+        # 1) HH:MM:SS or MM:SS
+        m = self._rx_hms.match(t)
+        if m:
+            hours = int(m.group(1)) if m.group(1) else 0
+            mins  = int(m.group(2))
+            return f"{hours}:{mins:02d}"
+
+        # 2) Decimal hours, e.g. "0.34 hours"
+        m = self._rx_hours.search(t)
+        if m:
+            v = float(m.group(1))
+            h = int(v)
+            m_val = int((v - h) * 60 + 0.5)
+            return f"{h}:{m_val:02d}"
+
+        # 3) Minutes, e.g. "20.8 minutes"
+        m = self._rx_minutes.search(t)
+        if m:
+            v = float(m.group(1))
+            total_mins = int(v + 0.5)
+            h = total_mins // 60
+            m_val = total_mins % 60
+            return f"{h}:{m_val:02d}"
+
+        # 4) Fallback: attempt to parse leading float as hours
         try:
             v = float(t.split()[0])
             h = int(v)
-            m = int((v - h) * 60)
-            return f"{h}:{m:02d}"
+            m_val = int((v - h) * 60 + 0.5)
+            return f"{h}:{m_val:02d}"
         except:
             return 'N/A'
 
@@ -128,12 +159,14 @@ class BatteryMonitorApp:
             self.percent_val.config(text=pc)
             self.time_val.config(text=tm)
 
-            tt = tm if tm != 'N/A' else pc
+            # choose display piece: prefer time if valid, else percent
+            display = tm if tm not in ('N/A', '--:--') else pc
+
             if b['status'] == 'discharging':
-                title = f"↓ {tt}"
+                title = f"↓ {display}"
             elif b['status'] == 'charging':
-                title = f"↑ {tt}"
-            elif b['status'] == 'fully-charged':
+                title = f"↑ {display}"
+            elif b['status'] in ('fully-charged', 'fully charged'):
                 title = f"✓ {pc}"
             else:
                 title = f"{st} {pc}"
@@ -144,6 +177,7 @@ class BatteryMonitorApp:
             title = "Battery Monitor (Error)"
 
         self.master.title(title)
+        # schedule next update
         self.master.after(5000, self.update_battery_info)
 
 
@@ -155,4 +189,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = BatteryMonitorApp(root)
     root.mainloop()
-
